@@ -14,8 +14,7 @@ private:
 	//byte * zipData = NULL;//存储一个zip的数据
 	//byte identifyHead[4] = { 0x50,0x4b,0x03,0x04 };//0-3bit
 	//byte zipHead[30];//zip文件头信息（不包含扩展区）
-	string lastTime ="";//10~11bit	最后修改时间
-	string lastDate = "";//12~13bit	最后修改日期
+	string lastDateTime = "";//10~11bit	最后修改时间   12~13bit	最后修改日期
 	int compressSize = 0;//18~21bit	压缩后大小	
 	int unCompressSize = 0;//22~25bit 未压缩大小
 	int fileNameLength = 0;//26~27bit 文件名长度
@@ -32,7 +31,7 @@ public:
 	~ZipModule();
 
 	//解析zip文件头部
-	void parseZip(byte* zipHead);
+	bool parseZip(byte* zipHead);
 
 	//解析zip文件文件名
 	void parseZipName(byte* zipHead);
@@ -52,7 +51,7 @@ public:
 	//byte* getZipHead();
 	//void setZipHead(byte* zipHead);
 	
-	string getLastTime();
+	string getLastDateTime();
 	
 	int getCompressSize();
 

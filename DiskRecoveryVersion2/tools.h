@@ -35,7 +35,7 @@ void charSaveWchar_t(wchar_t*& str1, unsigned char* str2, int n);
 void charToWchar_t(wchar_t*& str1, const char* str2, int n);
 
 //去除字符串空格
-BOOL myTrim(string& s);
+BOOL myTrim(string& s,string str);
 
 //对string类型的字符串进行切片
 vector<string> split(const string& src, string separate_character);
@@ -60,6 +60,8 @@ string parseTime(unsigned char* time);
 //0~4bit 为日,5~8bit 为月,9~15bit 为年+1980
 string parseDate(unsigned char* date);
 
+string parseDateTime(byte* dateTime);
+
 
 
 //解析4字节的长度
@@ -68,6 +70,23 @@ DWORD parseLength4(byte* length);
 int parseLength2(byte* length);
 
 
+
+//utf-8转ascii
+std::string UTF_82ASCII(std::string& strUtf8Code);
+
+//utf-8转unicode
+std::wstring Utf82Unicode(const std::string& utf8string);
+
+
+//宽字节转ascii
+std::string WideByte2Acsi(std::wstring& wstrcode);
+
+
+int utf8_check(const char* str, size_t length);
+
+
+//office文件判断
+bool checkOfficeFragment(const std::string name);
 
 
 

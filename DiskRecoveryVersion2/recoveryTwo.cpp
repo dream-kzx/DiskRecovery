@@ -522,7 +522,7 @@ void eachDirectory(Directory* p) {
 			name1[k2] = str[num1 + i];
 		}
 		s = ucharToString(name1, sizeof(name1));
-		myTrim(s);
+		myTrim(s," ");
 		disposeStr(s);
 		replaceComma(s);
 		s = "£¿" + s;

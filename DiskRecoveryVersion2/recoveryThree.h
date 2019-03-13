@@ -26,3 +26,5 @@ void queryChildrenDirectoryThree(Drives drive, DWORD directoryLocation,byte* sec
 int searchZipIdentity(Drives drive, DWORD sectorsNumber, byte* sectorsIdentity, byte* buffer, int length, acNode* root);
 
 void SundaySearch(byte* buffer, int length, DWORD sectorsNumber, byte* sectorsIdentity, Drives drive);
+
+bool recoveryFileInThree(Drives drive, string csvFileName);

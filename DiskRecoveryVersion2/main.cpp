@@ -74,7 +74,8 @@ int _tmain(void) {
 					recoveryFileInTwo(drives[i],test);
 					break;
 				case 3:
-					matchFileFragmentation(drives[i]);
+					//matchFileFragmentation(drives[i]);
+					recoveryFileInThree(drives[i], "test.csv");
 				default:
 					break;
 				}

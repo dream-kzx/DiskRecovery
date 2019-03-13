@@ -129,14 +129,14 @@ void charToWchar_t(wchar_t*& str1, const char* str2, int n) {
 }
 
 //去除字符串空格
-BOOL myTrim(string& s) {
+BOOL myTrim(string& s,string str) {
 	if (s.empty()) {
 		return TRUE;
 	}
-	int x = s.find_last_of(" ");
+	int x = s.find_last_of(str);
 	if (x >= 0) {
 		s.erase(x, 1);
-		myTrim(s);
+		myTrim(s, str);
 	}
 	else {
 		return TRUE;
@@ -249,6 +249,27 @@ string parseDate(unsigned char* date) {
 	return okDate;
 }
 
+string parseDateTime(byte* dateTime) {
+	FILETIME temp;
+	SYSTEMTIME result;
+
+	int time = dateTime[0] + dateTime[1] * 256;
+	int date = dateTime[2] + dateTime[3] * 256;
+
+	DosDateTimeToFileTime(date, time, &temp);
+	FileTimeToSystemTime(&temp, &result);
+
+	if (result.wDay > 9999 || result.wMonth > 12 || result.wDay > 31 
+		|| result.wHour > 24 || result.wMinute > 60 || result.wSecond > 60) {
+		return "";
+	}
+
+	char okDateTime[21];
+	sprintf_s(okDateTime, "%04d/%02d/%02d %02d:%02d:%02d", result.wYear,result.wMonth,result.wDay,
+		result.wHour,result.wMinute,result.wSecond);
+	return okDateTime;
+}
+
 
 //解析4字节的长度
 DWORD parseLength4(byte* length) {
@@ -260,4 +281,113 @@ int parseLength2(byte* length) {
 	return length[0] + length[1] * 256;
 }
 
+//宽字节转ascii
+std::string WideByte2Acsi(std::wstring& wstrcode)
+{
+	int asciisize = ::WideCharToMultiByte(CP_OEMCP, 0, wstrcode.c_str(), -1, NULL, 0, NULL, NULL);
+	if (asciisize == ERROR_NO_UNICODE_TRANSLATION)
+	{
+		throw std::exception("Invalid UTF-8 sequence.");
+	}
+	if (asciisize == 0)
+	{
+		throw std::exception("Error in conversion.");
+	}
+	std::vector<char> resultstring(asciisize);
+	int convresult = ::WideCharToMultiByte(CP_OEMCP, 0, wstrcode.c_str(), -1, &resultstring[0], asciisize, NULL, NULL);
 
+	if (convresult != asciisize)
+	{
+		throw std::exception("La falla!");
+	}
+
+	return std::string(&resultstring[0]);
+}
+
+
+//utf-8转unicode
+std::wstring Utf82Unicode(const std::string& utf8string)
+{
+	int widesize = ::MultiByteToWideChar(CP_UTF8, 0, utf8string.c_str(), -1, NULL, 0);
+	if (widesize == ERROR_NO_UNICODE_TRANSLATION)
+	{
+		throw std::exception("Invalid UTF-8 sequence.");
+	}
+	if (widesize == 0)
+	{
+		throw std::exception("Error in conversion.");
+	}
+
+	std::vector<wchar_t> resultstring(widesize);
+
+	int convresult = ::MultiByteToWideChar(CP_UTF8, 0, utf8string.c_str(), -1, &resultstring[0], widesize);
+
+	if (convresult != widesize)
+	{
+		throw std::exception("La falla!");
+	}
+
+	return std::wstring(&resultstring[0]);
+}
+
+//utf-8转ascii
+std::string UTF_82ASCII(std::string& strUtf8Code)
+{
+	std::string strRet("");
+	//先把 utf8 转为 unicode  
+	std::wstring wstr = Utf82Unicode(strUtf8Code);
+	//最后把 unicode 转为 ascii  
+	strRet = WideByte2Acsi(wstr);
+	return strRet;
+}
+
+
+int utf8_check(const char* str, size_t length) {
+	size_t i;
+	int nBytes;
+	unsigned char chr;
+
+	i = 0;
+	nBytes = 0;
+	while (i < length) {
+		chr = *(str + i);
+
+		if (nBytes == 0) { //计算字节数
+			if ((chr & 0x80) != 0) {
+				while ((chr & 0x80) != 0) {
+					chr <<= 1;
+					nBytes++;
+				}
+				if ((nBytes < 2) || (nBytes > 6)) {
+					return 0; //第一个字节最少为110x xxxx
+				}
+				nBytes--; //减去自身占的一个字节
+			}
+		}
+		else { //多字节除了第一个字节外剩下的字节
+			if ((chr & 0xC0) != 0x80) {
+				return 0; //剩下的字节都是10xx xxxx的形式
+			}
+			nBytes--;
+		}
+		i++;
+	}
+	return (nBytes == 0);
+}
+
+
+//|| name.find("docProps/")
+//|| name.find("word/") || name.find("xl/")
+//|| name.find("ppt") || name.find("[Content_Types].xml")
+//office文件判断
+bool checkOfficeFragment(const std::string name) {
+	if (name.find("_rels/") != string::npos|| name.find("docProps/") != string::npos
+		|| name.find("word/") != string::npos|| name.find("xl/") != string::npos
+		|| name.find("ppt/") != string::npos|| name.find("[Content_Types].xml") != string::npos) {
+		return true;
+	}
+	else {
+		return false;
+	}
+	
+}

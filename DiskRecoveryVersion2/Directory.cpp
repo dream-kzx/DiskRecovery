@@ -226,7 +226,7 @@ void getDetailMessage(PDirectoryStruct& PNode) {
 
 
 		s = ucharToString(name1, k2, str[num + 0x0C]);
-		myTrim(s);
+		myTrim(s," ");
 
 		s = "~" + s;
 

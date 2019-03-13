@@ -24,9 +24,6 @@
     <ClCompile Include="源2.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="testGit.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ThreadPool.h">

@@ -28,8 +28,8 @@ ZipModule::~ZipModule()
 //	}
 //}
 
-string ZipModule::getLastTime() {
-	return this->lastDate+" "+this->lastTime;
+string ZipModule::getLastDateTime() {
+	return this->lastDateTime;
 }
 
 
@@ -78,17 +78,23 @@ void ZipModule::setLocation(DWORD location) {
 //int extraLength = 0;//28~29bit 扩展区长度
 //string fileName = NULL;//30~(330+fileNameLength-1) 文件名
 //long zipSize = 0;
-void ZipModule::parseZip(byte* zipHead) {
+bool ZipModule::parseZip(byte* zipHead) {
 	//设置最后修改日期
-	byte date[2];
-	date[0] = zipHead[10];
-	date[1] = zipHead[11];
-	this->lastDate = parseDate(date);
-	//设置最后修改时间
-	byte time[2];
-	time[0] = zipHead[12];
-	time[1] = zipHead[13];
-	this->lastTime = parseTime(time);
+	//byte date[2];
+	//date[0] = zipHead[10];
+	//date[1] = zipHead[11];
+	//this->lastDate = parseDate(date);
+	////设置最后修改时间
+	//byte time[2];
+	//time[0] = zipHead[12];
+	//time[1] = zipHead[13];
+	//this->lastTime = parseTime(time);
+	byte dateTime[4];
+	dateTime[0] = zipHead[10];
+	dateTime[1] = zipHead[11];
+	dateTime[2] = zipHead[12];
+	dateTime[3] = zipHead[13];
+	this->lastDateTime = parseDateTime(dateTime);
 
 	//解析未压缩大小
 	byte lengthStr[4];
@@ -97,6 +103,9 @@ void ZipModule::parseZip(byte* zipHead) {
 	lengthStr[2] = zipHead[20];
 	lengthStr[3] = zipHead[21];
 	this->compressSize = parseLength4(lengthStr);
+	if (this->compressSize < 0) {
+		return false;
+	}
 	//解析压缩后大小
 	lengthStr[0] = zipHead[22];
 	lengthStr[1] = zipHead[23];
@@ -108,6 +117,11 @@ void ZipModule::parseZip(byte* zipHead) {
 	lengthStr[0] = zipHead[26];
 	lengthStr[1] = zipHead[27];
 	this->fileNameLength = parseLength2(lengthStr);
+	
+	if (this->fileNameLength > 200) {
+		std::cout << "                                           " << this->fileNameLength << endl;
+		return false;
+	}
 
 	//解析扩展区大小
 	lengthStr[0] = zipHead[28];
@@ -117,16 +131,29 @@ void ZipModule::parseZip(byte* zipHead) {
 	//获得zip文件大小
 	this->zipSize = this->compressSize + 30 + this->fileNameLength + this->extraLength;
 
+	return true;
+
 }
 
 //解析zip文件文件名
 void ZipModule::parseZipName(byte* zipHead) {
 	//解析文件名
 	string fileName = "";
+	//bool real = false;//判断是否是utf-8编码的
 	for (int i = 0; i < this->fileNameLength; i++) {
+		/*if ((zipHead[30+i] > 127 || zipHead[30 + i] < 32)&& real!=true) {
+			real = true;
+		}*/
 		fileName += zipHead[30 + i];
 	}
-	this->fileName = fileName;
+	string temp;
+	if (utf8_check(fileName.c_str(),this->fileNameLength)) {
+		temp = UTF_82ASCII(fileName);
+		
+	}
+	myTrim(temp, "\0");
+
+	this->fileName = temp;
 }
 
 //int ZipModule::isZipIdentify(byte* identify) {
